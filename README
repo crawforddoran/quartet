@@ -1,0 +1,188 @@
+Quartet
+*******
+
+A tetrahedral mesh generator based on Jonathon Shewchuk's isosurface stuffing 
+algorithm in combination with the A15 acute tetrahedral tile.
+
+written by:
+Robert Bridson (www.cs.ubc.ca/~rbridson)
+Crawford Doran (www.crawforddoran.com)
+--------------------------------------
+
+
+Overview
+==========
+
+Quartet converts a watertight triangle mesh into a high-quality uniform 
+tetrahedral mesh that closely approximates the geometry, up to the curvature 
+implied by the specified grid sampling (dx). Optionally, the tetrahedral mesh 
+can be warped to match sharp features on the input, and also improved by a 
+quality optimization pass.
+
+
+Building Quartet
+=================
+
+1) It may be necessary to edit Makefile.defs in order to ensure that 
+   platform-specific variables are set correctly. These include the compiler,
+   linker, and all flags associated with them, including libraries.
+2) Run 'make depend'
+3) Run 'make' and/or 'make release' ('make' is equivalent to 'make debug')
+
+
+Running Quartet
+==================
+
+Quartet is run from the command line with the following syntax:
+
+quartet <input.obj> <dx> <output.tet> [-f <feature.feat>] [-a <angle_threshold>]
+[-s <surface.obj>] [-i] [-o]
+
+- <input.obj> is the OBJ file containing the surface to be converted to a 
+  tetrahedral mesh.
+- <dx> is the grid spacing used in the isosurface stuffing algorithm. The 
+  generated tetrahedra will be approximately this size.
+- <output.tet> is a path to the file where the resulting tetrahedral mesh will 
+  be saved.
+
+The optional flags have the following effects:
+-f <features.feat>   -- The given file <features.feat> contains lists of 
+                        points and edges indicating sharp corners and ridges 
+                        in the input. The output mesh will resolve these 
+                        features as well as possible.
+-a <angle_threshold> -- Auto-detects sharp features in the input.  Edges with
+                        a dihedral angle smaller than <angle_threshold> degrees
+                        will be resolved in the output as well as possible.
+                        In addition, these features will be written to a file
+                        called 'auto.feat' (which can then be fed to the -f 
+                        option in future executions).
+-s <surface.obj>     -- The boundary of the resulting tetrahedral mesh is
+                        written to <surface.obj>.  This is largely for 
+                        convenience of visualizing the result.
+-i                   -- Intermediate stages of the mesh generation process are
+                        saved to disk in files named 'N_*_.tet' where N is the 
+                        numbering of the steps.
+-o                   -- Perform quality optimization on the resulting 
+                        tetrahedral mesh.
+
+Example inputs can be found in the 'meshes' directory.  For the inputs with
+sharp features, corresponding .feat files are provided.
+
+Example usages:
+quartet dragon.obj 0.01 dragon_01.tet -o -s dragon.obj
+quartet fandisk.obj 0.1 fandisk_1.tet -f fandisk.feat
+quartet block.obj 0.5 block_5.tet -a 110.0 -o
+
+
+Running view_tet
+==================
+
+We have included an OpenGL viewer application for visualizing resulting tet 
+meshes.  The viewer is called view_tet, and can be called with the following 
+syntax:
+
+view_tet <input.tet> [-s] [-f <features.feat>] [-p (x|y|z)<cutting-plane-pos>]*
+[-w <num_tets>]
+
+Here, <input.tet> is the TET file produced by quartet containing the tet mesh.
+
+The optional flags have the following effects:
+-s                            -- Assume that <input.tet> is actually
+                                 <input.obj> and read it in as a surface
+                                 mesh from an OBJ file.
+-f <features.feat>            -- Displays the sharp features in the file
+                                 <features.feat> alongside the mesh.
+-p (x|y|z)<cutting-plane-pos> -- Specifies a plane to cut the mesh so the
+                                 viewer can see "inside" of it.  The plane is
+                                 specified by which coordinate axis is its 
+                                 normal and its position along that axis.
+                                 Multiple planes can be specified with multiple
+                                 occurrences of this flag.
+-w num_tets                   -- Draw the mesh so that the <num_tets>
+                                 worst-quality tetrahedra are highlighted.
+
+Example usages:
+view_tet block.tet -p x0.0
+view_tet dragon.obj -s
+view_tet fandisk.tet -f fandisk.feat -w 10
+
+Once view_tet is running, the viewer can be controlled with the following 
+inputs:
+
+Shift+LeftMouseButton   -- Rotate camera
+Shift+RightMouseButton  -- Zoom camera
+Shift+MiddleMouseButton -- Pan camera
+
+
+
+Source Code overview
+======================
+
+The following files make up the quartet source:
+
+Utilities / Data Structures:
+
+util.h
+ - a bunch of small useful functions
+
+vec.h
+ - a convenience wrapper around fixed-length arrays (for vectors in 3D etc.)
+
+array3.h
+ - a convenience wrapper around STL vectors to get 3D arrays
+
+sdf.h/cpp
+ - a signed-distance-field data structure for working with level sets
+
+read_obj.h/cpp
+ - code to read in a Wavefront .OBJ file
+
+trimesh.h/cpp
+ - a simple half-edge triangle mesh data structure
+
+tet_mesh.h/cpp
+ - an index-based tetrahedral mesh data structure.  Maintains incidence 
+   relationships as necessary for fast adjacency queries.
+
+features.h/cpp
+ - Data structures representing sharp features of a triangle mesh and 
+   aggregations of those features (called FeatureSets)
+
+
+Meshing Functions:
+
+geometry_queries.h/cpp
+ - some simple and not-so-simple geometric operations needed for creating
+   signed distance functions from triangle meshes.
+   Uses Jonathan Shewchuk's robust geometric predicates code, found in 
+   predicates.cpp (http://www.cs.cmu.edu/~quake/robust.html).
+
+make_signed_distance.h/cpp
+ - code for robustly creating a fairly accurate signed distance function
+   of a watertight triangle mesh, sampled on a regular 3D grid.
+
+make_tet_mesh.h/cpp
+ - code to create a quality tetrahedral mesh of the interior of a level set
+
+tet_quality.h/cpp
+ - functions for measuring quality of tetrahedra based on various metrics
+
+match_features.h/cpp
+ - code to restore desired sharp features onto a tetrahedral mesh
+
+optimize_tet_mesh.h/cpp
+ - code to improve the overall quality of a given tetrahedral mesh.  Uses as 
+   much data from the meshing step (ie: sdf, sharp features, etc.) as possible.
+
+main.cpp
+ - quartet command-line program 
+
+
+Viewer Application:
+
+gluvi.h/cpp
+ - code for creating a simple generic OpenGL viewer application
+
+view_tet.cpp
+ - view_tet main code file for viewing tet meshes
+

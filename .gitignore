@@ -2,7 +2,9 @@
 *.slo
 *.lo
 *.o
-*.obj
+#*.obj
+obj/*
+obj_debug/*
 
 # Precompiled Headers
 *.gch
@@ -26,3 +28,8 @@
 *.exe
 *.out
 *.app
+quartet
+quartet_release
+view_tet
+view_tet_release
+

@@ -1,0 +1,53 @@
+- A better build setup (eg: cmake)
+
+- Iteratively alternate between optimization and progressive feature matching
+
+- Alternative feature matching strategies
+    - Move neighbors when snapping vertex (ie: energy/spring model, 
+        displacement kernel).
+    - Snap lattice vertices to features before doing isosurface stuffing.
+    - OR Snap lattice vertices to feature endpoints (not full features) 
+        before doing isosurface stuffing.
+
+- Ensure optimality of path search
+    - Right now not guaranteed to be optimal because the tet inversion test
+      depends on the path taken to a particular vertex, not just the edges
+      and weights of the graph.
+
+- Use tet quality metrics to choose optimal paths during edge snapping
+    (instead of just minimizing the distance that vertices are moved).
+    - This may require Bellman-Ford (for negative edge weights), because
+        it's possible that snapping a vertex could actually improve the 
+        tet that it's a part of (our distance-minimizing algorithm
+        assumes that moving a vertex will always make the tet worse).
+
+- Improve mesh data structure efficiency
+    - ie: adjacency list for triangle mesh, O(1) neighbor lookup, improve 
+        efficiency of graph search in match_features
+          - Efficient TriMesh class created (half-edge data structures),
+            but it isn't applicable to the mesh we've been using that 
+            indexes into the vertices of a TetMesh.
+
+
+Less important stuff:
+- Better tet-mesh data structures
+    - More efficient traversal of edges, triangles.
+
+- Tet Quality measures
+    - Design pattern for plugging in arbitrary quality measure?
+
+- FeatureSet::consolidate()
+
+- Allow topology changes when matching features.
+    - If unable to find path between two vertices separated by two boundary
+        triangles, do an "edge split" or "edge flip" on the edge separating 
+        them.
+
+- Curvature for automatic feature detection to detect feature points.
+
+- Additional misc optimizations
+
+- Handle more mesh file formats
+    - .OFF (input, triangles)
+    - .ELE (output, tets)
+

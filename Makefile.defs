@@ -1,0 +1,31 @@
+# This file is included into the main Makefile, providing it with
+# local machine settings.
+# Most of it is platform-specific compilers, flags, and libraries.
+# See below examples for which variables should be defined.
+
+# For example, on a Linux PC this will likely work:
+DEPEND = g++
+CC = g++ -Wall
+RELEASE_FLAGS = -O3 -DNDEBUG -funroll-loops
+DEBUG_FLAGS = -g
+LINK = g++
+LINK_LIBS = -lm
+VIEWER_LIBS = -lGL -lGLU -lglut
+
+# Should work for Mingw (with freeglut installed)
+#DEPEND = g++
+#CC = g++ -Wall
+#RELEASE_FLAGS = -O3 -DNDEBUG -funroll-loops
+#DEBUG_FLAGS = -g
+#LINK = g++
+#LINK_LIBS = -lm
+#VIEWER_LIBS = -lopengl32 -lglu32 -lfreeglut
+
+# On Mac OS X (on a G5), this probably will work:
+#DEPEND = g++
+#CC = g++ -Wall
+#RELEASE_FLAGS = -DNDEBUG -fast # add -mcpu=7450 for a G4, or -mcpu=750 for a G3 since -fast enables 970(G5) instructions by default
+#DEBUG_FLAGS = -g
+#LINK = g++
+#LINK_LIBS = -lm -lobjc
+#VIEWER_LIBS = -framework OpenGL -framework GLUT
