@@ -106,6 +106,8 @@ struct TetMesh
     // etc.) and write it to the file with the given name.
     bool writeInfoToFile(const char* filename) const;
 
+
+    bool writeToFileVTK(const char *filename) const;
 private:
     std::vector<Vec3f> v;
     std::vector<Vec4i> t;

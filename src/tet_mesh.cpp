@@ -436,6 +436,49 @@ bool TetMesh::writeToFile(const char* filename) const
     return true;
 }
 
+bool TetMesh::writeToFileVTK(const char *filename) const
+{
+  std::ofstream file(filename);
+  if (!file.is_open()) {
+      // Handle error: file could not be opened
+      return false;
+  }
+
+  // Write header
+  file << "# vtk DataFile Version 2.0\n";
+  file << "quartet\n";
+  file << "ASCII\n";
+  file << "DATASET UNSTRUCTURED_GRID\n";
+
+  // Write number of points
+  file << "POINTS " << v.size() << " double\n";
+
+  // Write point coordinates
+  for (const Vec3f& point : v) {
+    file << point[0] << " " << point[1] << " " << point[2] << "\n";
+  }
+
+  // Write number of cells
+  int numCells = t.size();
+  int numCellPoints = 1 + 4;
+  int totalNumCellPoints = numCells * numCellPoints;
+  file << "CELLS " << numCells << " " << totalNumCellPoints << "\n";
+
+  // Write cell connectivity
+  for (const Vec4i& tet : t) {
+    file << "4 " << tet[0] << " " << tet[1] << " " << tet[2] << " " << tet[3] << "\n";
+  }
+
+  // Write cell types (all tetrahedra)
+  int cellType = 10; // VTK cell type for tetrahedron
+  file << "CELL_TYPES " << numCells << "\n";
+  for (int i = 0; i < numCells; ++i) {
+    file << cellType << "\n";
+  }
+
+  file.close();
+  return true;
+}
 
 bool TetMesh::writeInfoToFile(const char* filename) const
 {
